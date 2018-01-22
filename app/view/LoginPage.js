@@ -10,6 +10,7 @@ import {
 	TextInput,
 	TouchableOpacity
 } from 'react-native';
+import HomePage from './HomePage';
 
 class LoginPage extends Component<{}> {
 	constructor(props) {
@@ -20,20 +21,26 @@ class LoginPage extends Component<{}> {
 		}
 	}
 	
-	handleNameChange(e) {
+	_handleNameChange(e) {
 		this.setState({
 			name: e.nativeEvent.text
 		})
 	}
 	
-	handlePasswordChange(e) {
+	_handlePasswordChange(e) {
 		this.setState({
 			password: e.nativeEvent.text
 		})
 	}
 	
-	sendAction() {
-	
+	_sendAction() {
+        const { navigator} = this.props;
+        if (navigator) {
+            navigator.push({
+                name:'HomePage',
+                component:HomePage,
+            })
+        }
 	}
 	
 	render() {
@@ -53,7 +60,7 @@ class LoginPage extends Component<{}> {
 					underlineColorAndroid={'transparent'}
 					textAlign='center'
 					value={this.state.name}
-					onChange={e => this.handleNameChange(e)}
+					onChange={e => this._handleNameChange(e)}
 				/>
 				<Text style={styles.instructions}>
 					密码
@@ -65,11 +72,11 @@ class LoginPage extends Component<{}> {
 					underlineColorAndroid={'transparent'}
 					textAlign='center'
 					value={this.state.password}
-					onChange={e => this.handlePasswordChange(e)}
+					onChange={e => this._handlePasswordChange(e)}
 				/>
 				<View style={styles.line} />
-				<TouchableOpacity onPress={() => {this.sendAction();}}>
-					<View  style={styles.style_view_commit} >
+				<TouchableOpacity onPress={() => {this._sendAction();}}>
+					<View  style={styles.commit} >
 						<Text style={styles.login}>
 							登陆
 						</Text>
@@ -112,7 +119,7 @@ const styles = StyleSheet.create({
 		height:35,
 		width: 200,
 	},
-	style_view_commit:{
+	commit:{
 		backgroundColor:'#63B8FF',
 		height:35,
 		width: 100,
