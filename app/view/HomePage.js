@@ -15,6 +15,7 @@ import {
 import {Calendar} from 'react-native-calendars';
 import Echarts from 'native-echarts';
 import TextWithButton from './Component/TextWithButton'
+import EventPage from './EventPage'
 const {width} = Dimensions.get('window');
 
 class HomePage extends Component<{}> {
@@ -23,32 +24,45 @@ class HomePage extends Component<{}> {
 		this.state = {};
 		this._onDayPress = this._onDayPress.bind(this);
 		this._onButtonClick1 = this._onButtonClick1.bind(this);
+		this._goToEventPage = this._goToEventPage.bind(this);
 	}
 	
 	_onButtonClick1() {
 	
 	}
 
-	
+	_goToEventPage() {
+        const { navigator} = this.props;
+        if (navigator) {
+            navigator.push({
+                name:'EventPage',
+                component:EventPage,
+            })
+        }
+	}
+
+	_getChartOptions() {
+		return {
+            title: {
+                text: ''
+            },
+            tooltip: {},
+            legend: {
+                data:['销量']
+            },
+            xAxis: {
+                data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+            },
+            yAxis: {},
+            series: [{
+                name: '销量',
+                type: 'bar',
+                data: [5, 20, 36, 10, 10, 20]
+            }]
+        };
+	}
+
     render() {
-	    const option = {
-		    title: {
-			    text: 'ECharts demo'
-		    },
-		    tooltip: {},
-		    legend: {
-			    data:['销量']
-		    },
-		    xAxis: {
-			    data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
-		    },
-		    yAxis: {},
-		    series: [{
-			    name: '销量',
-			    type: 'bar',
-			    data: [5, 20, 36, 10, 10, 20]
-		    }]
-	    };
         return (
 	        <ScrollView style={styles.scrollContainer}>
 		        <TextWithButton
@@ -61,7 +75,18 @@ class HomePage extends Component<{}> {
                     hideExtraDays
                     markedDates={{[this.state.selected]: {selected: true}}}
                 />
-		        <Echarts option={option} height={300} width={width} />
+				<Text style={styles.ageLabel}>
+					月龄
+				</Text>
+				<TextWithButton
+					title="今日动态"
+					onClick= {this._goToEventPage}
+					bTitle="编辑"/>
+		        <Echarts option={this._getChartOptions()} height={300} width={width} />
+				<TextWithButton
+					title="test"
+					onClick= {this._onButtonClick1}
+					bTitle="test1"/>
 	        </ScrollView>
         );
     }
@@ -85,6 +110,10 @@ const styles = StyleSheet.create({
 		borderColor: '#eee',
 		height: 350
 	},
+	ageLabel: {
+        fontSize: 25,
+        color: '#000000',
+	}
 });
 
 module.exports = HomePage;

@@ -14,11 +14,13 @@ class TextWithButton extends Component<{}> {
 	render() {
 		return (
 			<View style={styles.container}>
-				<Text style={styles.label}>
-					{this.props.title}
-				</Text>
+				<View style={styles.title}>
+					<Text style={styles.titleLabel}>
+						{this.props.title}
+					</Text>
+				</View>
 				<TouchableOpacity onPress = {this.props.onClick}>
-					<View  style={styles.commit} >
+					<View  style={styles.button} >
 						<Text style={styles.buttonLabel}>
 							{this.props.bTitle}
 						</Text>
@@ -35,21 +37,23 @@ const styles = StyleSheet.create({
 		backgroundColor: '#7d7d7d',
 		flexDirection: 'row'
 	},
-	label: {
+	title: {
 		flex: 1,
-		textAlign: 'left',
+        justifyContent: 'center',
+    },
+	titleLabel: {
+        fontSize: 25,
+        color: '#000000',
 	},
 	button: {
-		flex: 1,
 		backgroundColor:'#63B8FF',
-		height:20,
+		height:30,
 		width: 100,
 		borderRadius:5,
 		justifyContent: 'center',
-		alignItems: 'flex-end',
 	},
 	buttonLabel: {
-		fontSize: 15,
+		fontSize: 20,
 		textAlign: 'center',
 		color: '#ffffff',
 	},
