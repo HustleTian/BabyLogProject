@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import {Calendar} from 'react-native-calendars';
 import Echarts from 'native-echarts';
+import TextWithButton from './Component/TextWithButton'
 const {width} = Dimensions.get('window');
 
 class HomePage extends Component<{}> {
@@ -21,7 +22,13 @@ class HomePage extends Component<{}> {
 		super(props);
 		this.state = {};
 		this._onDayPress = this._onDayPress.bind(this);
+		this._onButtonClick1 = this._onButtonClick1.bind(this);
 	}
+	
+	_onButtonClick1() {
+	
+	}
+
 	
     render() {
 	    const option = {
@@ -44,6 +51,10 @@ class HomePage extends Component<{}> {
 	    };
         return (
 	        <ScrollView style={styles.scrollContainer}>
+		        <TextWithButton
+			        title="test"
+			        onClick= {this._onButtonClick1}
+			        bTitle="test1"/>
                 <Calendar
                     onDayPress={this._onDayPress}
                     style={styles.calendar}
