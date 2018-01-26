@@ -1,3 +1,4 @@
 rootProject.name = 'app'
-
+include ':react-native-datetime'
+project(':react-native-datetime').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-datetime/android')
 include ':app'
