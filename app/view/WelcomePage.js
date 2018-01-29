@@ -19,10 +19,7 @@ class WelcomePage extends Component<{}> {
 	_goToLogin() {
 		this.props.navigator.push({
 			component: LoginPage,
-			passProps: {
-				name: 'LoginPage'
-			},
-			type: 'Normal'
+			name: 'LoginPage',
 		})
 	}
 	
@@ -32,10 +29,7 @@ class WelcomePage extends Component<{}> {
 	_goToRegister() {
 		this.props.navigator.push({
 			component: RegisterPage,
-			passProps: {
-				name: 'RegisterPage'
-			},
-			type: 'Normal'
+			name: 'RegisterPage',
 		})
 	}
 	

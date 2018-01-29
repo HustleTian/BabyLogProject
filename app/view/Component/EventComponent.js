@@ -7,128 +7,65 @@ import {
     StyleSheet,
     Text,
     View,
-    Button,
-	Alert,
-	TimePickerAndroid,
 } from 'react-native';
-import ModalDropdown from 'react-native-modal-dropdown';
+import TextWithButton from './TextWithButton'
 const PropTypes = require('prop-types');
 
 var eventKeys = ['事件1', '事件2', '事件3'];
 class EventComponent extends Component<{}> {
 	constructor(props) {
 		super(props);
+		let data = new Date();
+		let shour = 0;
+		let sminute = 0;
+		let ssecond = 0;
+		if (props.startTime != -1)
+		{
+			data.setTime(props.startTime);
+			shour = data.getHours();
+			sminute = data.getMinutes();
+			ssecond = data.getSeconds();
+		}
+		
+		let ehour = 23;
+		let eminute = 59;
+		let esecond = 59;
+		if (props.endTime != -1)
+		{
+			data.setTime(props.endTime);
+			ehour = data.getHours();
+			eminute = data.getMinutes();
+			esecond = data.getSeconds();
+		}
 		this.state = {
-			startHour: props.startHour,
-			startMinute: props.startMinute,
-			endHour: props.endHour,
-			endMinute: props.endMinute,
+			startHour: shour,
+			startMinute: sminute,
+			startSecond: ssecond,
+			endHour: ehour,
+			endMinute: eminute,
+			endSecond: esecond,
 			eventType: props.eventType,
 			eventDesc: props.eventDesc,
-        };
+			id: props.id,
+			callback: props.callback,
+		};
 	}
 	
 	static propTypes = {
-		startHour: PropTypes.number,
-		startMinute: PropTypes.number,
-		endHour: PropTypes.number,
-		endMinute: PropTypes.number,
+		id: PropTypes.number,
+		startTime: PropTypes.number,
+		endTime: PropTypes.number,
 		eventType: PropTypes.number,
 		eventDesc: PropTypes.string,
+		callback: PropTypes.func,
 	}
 	
 	static defaultProps = {
-		startHour: 0,
-		startMinute: 0,
-		endHour: 12,
-		endMinute: 59,
-		eventType: 0,
-		eventDesc: "",
-	}
-	
-	render() {
-        return (
-        <View style={styles.container}>
-	        <ModalDropdown
-		        options={eventKeys}
-		        defaultValue={eventKeys[this.state.eventType]}
-		        defaultIndex={this.state.eventType}
-		        onSelect={(index,value)=>this._onEventSelect(index,value)}
-	            style={styles.button}
-	            textStyle={styles.text}
-		        dropdownStyle={styles.down}
-		        dropdownTextStyle={styles.downText}
-	        />
-	        <Button title={this._getTimeString(true)}
-	                onPress={start=>this._openTimePicker(true)}/>
-	        <Button title={this._getTimeString(false)}
-	                onPress={start=>this._openTimePicker(false)}/>
-        </View>
-	        );
-    }
-	
-	//进行创建时间日期选择器,创建一个'openDataPicker'（名字自定义）
-	async _openTimePicker(start){
-		try{
-			var newState = {};
-			var options = {};
-			var stateKey = start ? "start" : "end";
-			options.is24Hour = true;
-			if (start)
-			{
-				options.hour = this.state.startHour;
-				options.minute = this.state.startMinute;
-			}
-			else
-			{
-				options.hour = this.state.endHour;
-				options.minute = this.state.endMinute;
-			}
-			const {action, hour, minute} = await TimePickerAndroid.open(options);
-			if(action === TimePickerAndroid.dismissedAction){
-				newState[stateKey + "Hour"] = options.hour;
-				newState[stateKey + 'Minute'] = options.minute;
-			}else{
-				let tempHour = hour;
-				let tempMinute = minute;
-				if (start)
-				{
-					if (hour > this.state.endHour)
-					{
-						tempHour = options.hour;
-						Alert.alert('温馨提醒','开始时间大于结束时间!')
-					}
-					if (hour == this.state.endHour && minute > this.state.endMinute)
-					{
-						tempMinute = options.minute;
-						Alert.alert('温馨提醒','开始时间大于结束时间!')
-					}
-				}
-				else
-				{
-					if (hour < this.state.startHour)
-					{
-						tempHour = options.hour;
-						Alert.alert('温馨提醒','结束时间小于开始时间!')
-					}
-					if (hour == this.state.startHour && minute < this.state.startMinute)
-					{
-						tempMinute = options.minute;
-						Alert.alert('温馨提醒','结束时间小于开始时间!')
-					}
-				}
-				newState[stateKey + "Hour"] = tempHour;
-				newState[stateKey + 'Minute'] = tempMinute;
-			}
-			this.setState(newState);
-		}catch({code,message}){
-			console.warn("Error in example '${stateKey}': ",message)
-		}
-	}
-	
-	_onEventSelect(index,value) {
-		this.setState({eventType:index});
-		console.log("DropDown select index is " + index.toString() + " value is " + value);
+		id : 100,
+		startTime : -1,
+		endTime: -1,
+		eventType : 0,
+		eventDesc : "",
 	}
 	
 	_getTimeString(start) {
@@ -146,31 +83,52 @@ class EventComponent extends Component<{}> {
 		
 		return ret;
 	}
+	
+	//修改存库
+	_edit() {
+		this.state.callback(this.state.id);
+	}
+	
+	render() {
+		return (
+			<View style={styles.container}>
+				<TextWithButton
+					title={eventKeys[this.state.eventType]}
+					onClick= {()=>this._edit()}
+					bTitle="修改"/>
+				<View style={{flexDirection: 'row'}}>
+					<Text>
+						开始时间:
+					</Text>
+					<Text>
+						{this._getTimeString(true)}
+					</Text>
+				</View>
+				<View style={{flexDirection: 'row'}}>
+					<Text>
+						结束时间:
+					</Text>
+					<Text>
+						{this._getTimeString(false)}
+					</Text>
+				</View>
+				<Text>
+					描述:
+				</Text>
+				<Text numberOfLines={10}>
+					{this.state.eventDesc}
+				</Text>
+			</View>
+		);
+	}
 }
 
 const styles = StyleSheet.create({
 	container: {
-		height: 150,
+		height: 200,
 		margin: 10,
 		backgroundColor: '#7d7d7d',
 	},
-	text: {
-		fontSize: 15,
-		textAlign: 'center',
-	},
-	downText: {
-		fontSize: 10,
-		textAlign: 'center',
-	},
-	button: {
-		backgroundColor:'#63B8FF',
-		height:30,
-		width: 50,
-		justifyContent: 'center',
-	},
-	down: {
-		width: 50,
-	}
 });
 
 module.exports = EventComponent;
