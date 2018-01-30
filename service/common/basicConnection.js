@@ -26,6 +26,7 @@ function responseDoReturn(res, result, resultJSON) {
  * 封装query之sql带不占位符func
  */
 function query(sql, callback) {
+    // console.log(sql);
     pool.getConnection(function (err, connection) {
         connection.query(sql, function (err, rows) {
             callback(err, rows);
@@ -39,7 +40,8 @@ function query(sql, callback) {
  * 封装query之sql带占位符func
  */
 function queryArgs(sql,args, callback) {
-    pool.getConnection(function (err, connection) {
+	// console.log(sql);
+	pool.getConnection(function (err, connection) {
         connection.query(sql, args,function (err, rows) {
             callback(err, rows);
             //释放链接
