@@ -7,7 +7,7 @@ import {
 	StyleSheet,
 	Text,
 	View,
-	TouchableOpacity
+	Button
 } from 'react-native';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
@@ -40,21 +40,11 @@ class WelcomePage extends Component<{}> {
 					欢迎来到喂养日志
 				</Text>
 				<View style={styles.line} />
-				<TouchableOpacity onPress={() => {this._goToLogin();}}>
-					<View  style={styles.commit} >
-						<Text style={styles.login}>
-							登陆
-						</Text>
-					</View>
-				</TouchableOpacity>
+				<Button title="登陆"
+				        onPress={()=>this._goToLogin()}/>
 				<View style={styles.line} />
-				<TouchableOpacity onPress={() => {this._goToRegister();}}>
-					<View  style={styles.commit} >
-						<Text style={styles.login}>
-							注册
-						</Text>
-					</View>
-				</TouchableOpacity>
+				<Button title="注册"
+				        onPress={()=>this._goToRegister()}/>
 			</View>
 		);
 	}
@@ -68,21 +58,11 @@ const styles = StyleSheet.create({
 		backgroundColor: '#ffffff',
 	},
 	welcome: {
-		fontSize: 30,
-		textAlign: 'center',
-		margin: 10,
+		fontSize: 20,
 	},
 	line: {
 		height: 10,
 		backgroundColor: '#000000'
-	},
-	commit:{
-		backgroundColor:'#63B8FF',
-		height:35,
-		width: 100,
-		borderRadius:5,
-		justifyContent: 'center',
-		alignItems: 'center',
 	},
 });
 

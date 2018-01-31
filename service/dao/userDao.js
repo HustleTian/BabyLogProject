@@ -7,7 +7,7 @@ var vsprintf = require("sprintf-js").vsprintf;
  */
 function addUserAction(req, res, next){
     // 获取前台页面传过来的参数
-    var param = req.query || req.params;
+    var param = req.body;
     // 执行Query
 	var uuid = guid();
     db.queryArgs($sqlCommands.user_status.insertOne,
@@ -32,9 +32,9 @@ function addUserAction(req, res, next){
  */
 function loginUserAction(req, res, next) {
 	// 获取前台页面传过来的参数
-	var param = req.query || req.params;
+	var param = req.body;
 	// 执行Query
-	db.query(sprintf($sqlCommands.user_status.login,param.uuid),
+	db.query(vsprintf($sqlCommands.user_status.login,[param.username,param.password]),
 		function(err, result) {
 			if(!err){
 				let temp = result;

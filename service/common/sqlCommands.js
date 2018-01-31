@@ -4,7 +4,7 @@
 
 var user_status = {
     insertOne:'INSERT INTO user (uuid, username, password, sex, birthday) VALUES(?,?,?,?,?)',
-    login:'SELECT * FROM user WHERE uuid="%s"',
+    login:'SELECT * FROM user WHERE username="%s" and password="%s"',
 };
 
 var event_status = {

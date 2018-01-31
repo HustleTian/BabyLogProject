@@ -15,4 +15,12 @@ router.get('/loginUserAction', function (req, res, next) {
     userDao.loginUserAction(req,res,next)
 });
 
+router.post('/addUserAction', function(req, res, next) {
+	userDao.addUserAction(req,res,next)
+});
+
+router.post('/loginUserAction', function (req, res, next) {
+	userDao.loginUserAction(req,res,next)
+});
+
 module.exports = router;

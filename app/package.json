@@ -14,7 +14,8 @@
     "react-native": "0.52.0",
     "react-native-calendars": "^1.16.1",
     "react-native-deprecated-custom-components": "^0.1.1",
-    "react-native-modal-dropdown": "^0.6.0"
+    "react-native-modal-dropdown": "^0.6.0",
+    "react-native-storage": "^0.2.2"
   },
   "devDependencies": {
     "babel-jest": "22.1.0",

@@ -4,8 +4,8 @@
 
 import React, { Component } from 'react';
 
-const root_Url = "localhost:3000/";
-class NetUtils extends React.Component{
+const root_Url = "http://10.10.22.112:3000/";
+class NetUtils extends Component{
     /*
      *  get请求
      *  url:请求地址

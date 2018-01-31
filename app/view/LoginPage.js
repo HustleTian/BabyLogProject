@@ -8,9 +8,12 @@ import {
 	Text,
 	View,
 	TextInput,
-	TouchableOpacity
+	Alert,
+	Button,
 } from 'react-native';
 import HomePage from './HomePage';
+import NetUtils from '../common/NetUtils';
+import Urls from '../common/urlCommands';
 
 class LoginPage extends Component<{}> {
 	constructor(props) {
@@ -34,13 +37,41 @@ class LoginPage extends Component<{}> {
 	}
 	
 	_sendAction() {
-        const { navigator} = this.props;
-        if (navigator) {
-            navigator.push({
-                name:'HomePage',
-                component:HomePage,
-            })
-        }
+		NetUtils.post(Urls.urls.login,
+			{username:this.state.name,password:this.state.password},
+			(responseJSON)=>{
+				if (json == null)
+				{
+					Alert.alert('温馨提醒','用户名或密码错误！');
+					return;
+				}
+				
+				if (json.code != 200)
+				{
+					Alert.alert('温馨提醒','用户名或密码错误！');
+					return;
+				}
+				
+				if (json.rows == null || json.rows.length <= 0)
+				{
+					Alert.alert('温馨提醒','用户名或密码错误！');
+					return;
+				}
+				
+				storage.save({
+					key: 'userInfo',
+					data: json.rows[0],
+				})
+				
+				const { navigator} = this.props;
+				if (navigator) {
+					navigator.push({
+						name:'HomePage',
+						component:HomePage,
+					})
+				}
+			}
+		);
 	}
 	
 	render() {
@@ -75,13 +106,8 @@ class LoginPage extends Component<{}> {
 					onChange={e => this._handlePasswordChange(e)}
 				/>
 				<View style={styles.line} />
-				<TouchableOpacity onPress={() => {this._sendAction();}}>
-					<View  style={styles.commit} >
-						<Text style={styles.login}>
-							登陆
-						</Text>
-					</View>
-				</TouchableOpacity>
+				<Button title="登陆"
+				        onPress={()=>this._sendAction()}/>
 			</View>
 		);
 	}
@@ -95,19 +121,15 @@ const styles = StyleSheet.create({
 		backgroundColor: '#ffffff',
 	},
 	welcome: {
-		fontSize: 30,
-		textAlign: 'center',
-		margin: 10,
+		fontSize: 20,
 	},
 	instructions: {
-		fontSize: 20,
-		textAlign: 'center',
+		fontSize: 15,
 		color: '#333333',
 		marginBottom: 5,
 	},
 	login: {
 		fontSize: 15,
-		textAlign: 'center',
 		color: '#ffffff',
 	},
 	line: {
@@ -118,14 +140,6 @@ const styles = StyleSheet.create({
 		backgroundColor:'#8692b0',
 		height:35,
 		width: 200,
-	},
-	commit:{
-		backgroundColor:'#63B8FF',
-		height:35,
-		width: 100,
-		borderRadius:5,
-		justifyContent: 'center',
-		alignItems: 'center',
 	},
 });
 

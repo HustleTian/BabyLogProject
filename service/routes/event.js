@@ -23,5 +23,21 @@ router.get('/searchAllEventForSingleUserAction', function(req, res, next) {
 	eventDao.searchAllEventForSingleUserAction(req,res,next)
 });
 
+router.post('/addEventAction', function(req, res, next) {
+	eventDao.addEventAction(req,res,next)
+});
+
+router.post('/editEventAction', function(req, res, next) {
+	eventDao.editEventAction(req,res,next)
+});
+
+router.post('/searchOneDayEventForSingleUserAction', function(req, res, next) {
+	eventDao.searchOneDayEventForSingleUserAction(req,res,next)
+});
+
+router.post('/searchAllEventForSingleUserAction', function(req, res, next) {
+	eventDao.searchAllEventForSingleUserAction(req,res,next)
+});
+
 module.exports = router;
 
