@@ -9,8 +9,12 @@ import {
 	View,
 	TextInput,
 	Button,
+    Alert,
+    DatePickerAndroid,
 } from 'react-native';
 import HomePage from './HomePage';
+import NetUtils from '../common/NetUtils'
+import Urls from '../common/urlCommands'
 
 class RegisterPage extends Component<{}> {
 	constructor(props) {
@@ -19,7 +23,9 @@ class RegisterPage extends Component<{}> {
 		this.state = {
 			name: "",
 			password: "",
-			birthday: date.getTime(),
+			year: date.getFullYear(),
+			month: date.getMonth(),
+			day: date.getDate(),
 		}
 	}
 	
@@ -39,15 +45,15 @@ class RegisterPage extends Component<{}> {
 	async _openDatePicker(){
 		try{
 			var options = {
-				date: new Date(2020, 4, 25)
+				date: new Date()
 			};
 			const {action, year, month, day} = await DatePickerAndroid.open(options);
 			if(action != DatePickerAndroid.dismissedAction){
-				// this.setState({
-				// 	year: year,
-				// 	month: month,
-				// 	day: day,
-				// });
+				this.setState({
+					year: year,
+					month: month,
+					day: day,
+				});
 			}
 		}catch({code,message}){
 			console.warn('Cannot open date picker', message);
@@ -56,38 +62,41 @@ class RegisterPage extends Component<{}> {
 	
 	//时间转成字符串
 	_getDateString() {
-		let date = new Date();
-		date.setTime(this.state.birthday);
-		return date.toDateString();
+		var ret = this.state.year.toString() + "/";
+		ret = ret + (this.state.month + 1).toString() + "/";
+		ret = ret + this.state.day.toString();
+		return ret;
 	}
 	
 	_sendAction() {
+		let date = new Date(this.state.year,this.state.month,this.state.day);
+		let birthday = date.getTime();
 		NetUtils.post(Urls.urls.register,
-			{username:this.state.name,password:this.state.password,birthday:this.state.birthday},
+			{username:this.state.name,password:this.state.password,birthday:birthday},
 			(responseJSON)=>{
 				if (json == null)
 				{
 					Alert.alert('温馨提醒','用户名或密码错误！');
 					return;
 				}
-				
+
 				if (json.code != 200)
 				{
 					Alert.alert('温馨提醒','用户名或密码错误！');
 					return;
 				}
-				
+
 				if (json.rows == null || json.rows.length <= 0)
 				{
 					Alert.alert('温馨提醒','用户名或密码错误！');
 					return;
 				}
-				
+
 				storage.save({
 					key: 'userInfo',
 					data: json.rows[0],
 				})
-				
+
 				const { navigator} = this.props;
 				if (navigator) {
 					navigator.push({
@@ -132,7 +141,7 @@ class RegisterPage extends Component<{}> {
 				/>
 				<View style={styles.line} />
 				<Button title={this._getDateString()}
-				        onPress={start=>this._openDatePicker()}/>
+				        onPress={() => this._openDatePicker()}/>
 				<View style={styles.line} />
 				<Button title="注册"
 						onPress={() => this._sendAction()}/>
