@@ -10,6 +10,7 @@ import {
     TextInput,
     TouchableOpacity,
 	ScrollView,
+    Alert,
 	Dimensions
 } from 'react-native';
 import {Calendar} from 'react-native-calendars';
@@ -21,15 +22,42 @@ const {width} = Dimensions.get('window');
 class HomePage extends Component<{}> {
 	constructor(props) {
 		super(props);
-		this.state = {};
-		this._onDayPress = this._onDayPress.bind(this);
-		this._onButtonClick1 = this._onButtonClick1.bind(this);
-		this._goToEventPage = this._goToEventPage.bind(this);
+		this.state = {
+			name: '',
+			birthday: 0,
+			age: 0,
+		}
+		this._loadStorage();
 	}
+
+    async _loadStorage() {
+        await storage.load({
+            key: 'userInfo',
+            autoSync: false,
+            syncInBackground: false
+        }).then(ret => {
+			let date = new Date();
+			let age = date.getTime() - ret.birthday;
+			age = Math.floor(age / (24 * 3600 * 1000));
+            this.setState({
+                name: ret.username,
+				birthday: ret.birthday,
+				age: age,
+            });
+        }).catch(err => {
+            console.warn('Load userInfo fail ', err);
+        })
+    }
 	
-	_onButtonClick1() {
-	
+	_onCompare() {
+        Alert.alert('温馨提醒','功能暂未开放，敬请期待!')
 	}
+
+    _onDayPress(day) {
+        this.setState({
+            selected: day.dateString
+        });
+    }
 
 	_goToEventPage() {
         const { navigator} = this.props;
@@ -37,6 +65,9 @@ class HomePage extends Component<{}> {
             navigator.push({
                 name:'EventPage',
                 component:EventPage,
+                params: {
+                    startTime: this.state.selected,
+                }
             })
         }
 	}
@@ -66,36 +97,31 @@ class HomePage extends Component<{}> {
         return (
 	        <ScrollView style={styles.scrollContainer}>
 		        <TextWithButton
-			        title="test"
-			        onClick= {this._onButtonClick1}
-			        bTitle="test1"/>
+			        title={this.state.name + '的成长日志'}
+			        onClick= {() => this._onCompare()}
+			        bTitle="对比"/>
                 <Calendar
-                    onDayPress={this._onDayPress}
+                    onDayPress={(day) => this._onDayPress(day)}
                     style={styles.calendar}
                     hideExtraDays
                     markedDates={{[this.state.selected]: {selected: true}}}
                 />
 				<Text style={styles.ageLabel}>
-					月龄
+					{'月龄:' + (this.state.age > 30 ? (Math.floor(this.state.age / 30)).toString() + '月' : this.state.age.toString() + '天')}
 				</Text>
 				<TextWithButton
 					title="今日动态"
-					onClick= {this._goToEventPage}
+					onClick= {() => this._goToEventPage()}
 					bTitle="编辑"/>
-		        <Echarts option={this._getChartOptions()} height={300} width={width} />
-				<TextWithButton
-					title="test"
-					onClick= {this._onButtonClick1}
-					bTitle="test1"/>
 	        </ScrollView>
         );
     }
-	
-	_onDayPress(day) {
-		this.setState({
-			selected: day.dateString
-		});
-	}
+
+	// <Echarts option={this._getChartOptions()} height={300} width={width} />
+	// <TextWithButton
+	// 	title="test"
+	// 	onClick= {this._onButtonClick1}
+	// 	bTitle="test1"/>
 }
 
 const styles = StyleSheet.create({

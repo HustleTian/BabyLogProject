@@ -30,6 +30,7 @@ class EventPage extends Component<{}> {
 			lastEndTime: props.startTime,   //最新一个事件的结束时间
 			today: "日期:" + day,//当天日期
 		};
+		console.warn(props.startTime);
 		this._processData();
 	}
 	

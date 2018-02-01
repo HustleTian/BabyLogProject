@@ -74,27 +74,33 @@ class RegisterPage extends Component<{}> {
 		NetUtils.post(Urls.urls.register,
 			{username:this.state.name,password:this.state.password,birthday:birthday},
 			(responseJSON)=>{
-				if (json == null)
+				console.warn(responseJSON);
+				if (responseJSON == null)
 				{
-					Alert.alert('温馨提醒','用户名或密码错误！');
+					Alert.alert('温馨提醒','注册失败！');
 					return;
 				}
 
-				if (json.code != 200)
+				if (responseJSON.code != 200)
 				{
-					Alert.alert('温馨提醒','用户名或密码错误！');
+					Alert.alert('温馨提醒','注册失败！');
 					return;
 				}
 
-				if (json.rows == null || json.rows.length <= 0)
+				if (responseJSON.uuid == null)
 				{
-					Alert.alert('温馨提醒','用户名或密码错误！');
+					Alert.alert('温馨提醒','注册失败！');
 					return;
 				}
 
 				storage.save({
 					key: 'userInfo',
-					data: json.rows[0],
+					data: {
+						username: this.state.name,
+						password: this.state.password,
+						uuid: responseJSON.uuid,
+						birthday: this.state.birthday,
+					},
 				})
 
 				const { navigator} = this.props;

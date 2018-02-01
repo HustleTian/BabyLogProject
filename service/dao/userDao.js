@@ -38,9 +38,16 @@ function loginUserAction(req, res, next) {
 		function(err, result) {
 			if(!err){
 				let temp = result;
+				let code = 200;
+				let msg = 'successful';
+				if (temp == null || temp.length <= 0)
+				{
+					code = 201;
+					msg = 'fail';
+				}
 				result = {
-					code: 200,
-					msg:'successful',
+					code: code,
+					msg: msg,
 					rows: temp
 				};
 			}

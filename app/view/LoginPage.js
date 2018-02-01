@@ -40,19 +40,19 @@ class LoginPage extends Component<{}> {
 		NetUtils.post(Urls.urls.login,
 			{username:this.state.name,password:this.state.password},
 			(responseJSON)=>{
-				if (json == null)
+				if (responseJSON == null)
 				{
 					Alert.alert('温馨提醒','用户名或密码错误！');
 					return;
 				}
 				
-				if (json.code != 200)
+				if (responseJSON.code != 200)
 				{
 					Alert.alert('温馨提醒','用户名或密码错误！');
 					return;
 				}
 				
-				if (json.rows == null || json.rows.length <= 0)
+				if (responseJSON.rows == null || responseJSON.rows.length <= 0)
 				{
 					Alert.alert('温馨提醒','用户名或密码错误！');
 					return;
@@ -60,7 +60,7 @@ class LoginPage extends Component<{}> {
 				
 				storage.save({
 					key: 'userInfo',
-					data: json.rows[0],
+					data: responseJSON.rows[0],
 				})
 				
 				const { navigator} = this.props;
