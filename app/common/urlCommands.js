@@ -7,7 +7,7 @@ var urls = {
 	addEvent:"event/addEventAction",
 	editEvent:"event/editEventAction",
 	searchOneUserOneDayEvent:"event/searchOneDayEventForSingleUserAction",
-	searchOneUserEvent:"searchAllEventForSingleUserAction",
+	searchOneUserEvent:"event/searchAllEventForSingleUserAction",
 };
 
 //exports

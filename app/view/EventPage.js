@@ -15,7 +15,6 @@ import EventComponent from './Component/EventComponent'
 import TextWithButton from './Component/TextWithButton'
 import EditPage from './EditPage';
 const PropTypes = require('prop-types');
-var data = require("../common/data.json");
 var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
 class EventPage extends Component<{}> {
@@ -25,49 +24,58 @@ class EventPage extends Component<{}> {
 		date.setTime(props.startTime);
 		let day = date.getFullYear().toString() + "-" + date.getMonth().toString() + "-" + date.getDate().toString();
 		this.state = {
-			data: data,
+			data: new Array(),
 			startTime: props.startTime,     //当天0点的时间戳
 			lastEndTime: props.startTime,   //最新一个事件的结束时间
-			today: "日期:" + day,//当天日期
+			today: "日期:" + day,           //当天日期
+			uuid: props.uuid,
 		};
 		console.warn(props.startTime);
-		this._processData();
+		this._loadData();
 	}
 	
 	static propTypes = {
 		startTime: PropTypes.number,
+		uuid: PropTypes.string,
 	}
 	
 	static defaultProps = {
 		startTime : new Date().getTime(),
+		uuid : '',
 	}
 	
-	_processData() {
-		// var sortById = function(){
-		// 	return function(o, p){
-		// 		let a, b;
-		// 		if (typeof o === "object" && typeof p === "object" && o && p) {
-		// 			a = o.startTime;
-		// 			b = p.startTime;
-		// 			if (a === b) {
-		// 				return 0;
-		// 			}
-		// 			if (typeof a === typeof b) {
-		// 				return a < b ? -1 : 1;
-		// 			}
-		// 			return typeof a < typeof b ? -1 : 1;
-		// 		}
-		// 		else {
-		// 			throw ("error");
-		// 		}
-		// 	}
-		// }
-		// this.state.data.sort(sortById);
-		// if (this.state.data.length > 0) {
-		// 	this.setState({
-		// 		lastEndTime: this.state.data[this.state.data.length - 1].endTime
-		// 	});
-		// }
+	_loadData() {
+		storage.load({
+			key: 'userEvent',
+			autoSync: true,
+			syncInBackground: true,
+			syncParams: {
+				extraFetchOptions: {
+					uuid: this.state.uuid,
+				},
+			},
+		}).then(ret => {
+			let data = new Array();
+			let lastEndTime = 0;
+			for (let i = 0; i < ret.length; i++)
+			{
+				if (ret[i].startTime >= this.state.startTime && ret[i].endTime <= this.state.startTime + 86400000)
+				{
+					data.push(ret[i]);
+					if (ret[i].endTime > lastEndTime)
+					{
+						lastEndTime = ret[i].endTime;
+					}
+				}
+			}
+			
+			this.setState({
+				lastEndTime: lastEndTime,
+				data: data,
+			});
+		}).catch(err => {
+			console.warn('Load userInfo fail ', err);
+		});
 	}
 
     _addEvent() {
@@ -112,6 +120,14 @@ class EventPage extends Component<{}> {
 	    }
     }
 	
+	//界面回退
+	_goBack() {
+		const { navigator} = this.props;
+		if (navigator) {
+			navigator.pop()
+		}
+	}
+	
 	_renderRow(rowData, sectionID, rowID, highlightRow) {
 		return(
 			<EventComponent
@@ -126,12 +142,31 @@ class EventPage extends Component<{}> {
     }
     
     render() {
+		if (this.state.data.length == 0)
+		{
+			return (
+				<View style={styles.container}>
+					<TextWithButton
+						title={this.state.today}
+						onClick= {()=>this._goBack()}
+						bTitle="返回"/>
+					<TextWithButton
+						title=''
+						onClick= {()=>this._addEvent()}
+						bTitle="添加"/>
+				</View>
+			);
+		}
         return (
             <View style={styles.container}>
                 <TextWithButton
                     title={this.state.today}
-                    onClick= {()=>this._addEvent()}
-                    bTitle="添加"/>
+                    onClick= {()=>this._goBack()}
+                    bTitle="返回"/>
+	            <TextWithButton
+		            title=''
+		            onClick= {()=>this._addEvent()}
+		            bTitle="添加"/>
 	            <ListView
 		            dataSource={ds.cloneWithRows(this.state.data)}
 		            renderRow={(rowData, sectionID, rowID, highlightRow)=>this._renderRow(rowData, sectionID, rowID, highlightRow)}

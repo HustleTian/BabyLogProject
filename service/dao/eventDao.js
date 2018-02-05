@@ -8,7 +8,7 @@ var vsprintf = require("sprintf-js").vsprintf;
  */
 function addEventAction(req, res, next){
 	// 获取前台页面传过来的参数
-	var param = req.query || req.params;
+	var param = req.body;
 	// 执行Query
 	db.queryArgs($sqlCommands.event_status.insertOne,
 		[param.uuid,param.eventType,param.eventDesc,param.startTime,param.endTime],
@@ -30,7 +30,7 @@ function addEventAction(req, res, next){
  */
 function editEventAction(req, res, next) {
 	// 获取前台页面传过来的参数
-	var param = req.query || req.params;
+	var param = req.body;
 	// 执行Query
 	db.query(vsprintf($sqlCommands.event_status.editOne,[param.eventType,param.eventDesc,param.startTime,param.endTime,param.uuid,param.id]),
 		function(err, result) {
@@ -53,7 +53,7 @@ function editEventAction(req, res, next) {
  */
 function searchOneDayEventForSingleUserAction(req, res, next) {
 	// 获取前台页面传过来的参数
-	var param = req.query || req.params;
+	var param = req.body;
 	// 执行Query
 	db.query(vsprintf($sqlCommands.event_status.searchOneUserOneDay,[param.uuid,param.startTime,param.endTime]),
 		function(err, result) {
@@ -77,7 +77,7 @@ function searchOneDayEventForSingleUserAction(req, res, next) {
  */
 function searchAllEventForSingleUserAction(req, res, next) {
 	// 获取前台页面传过来的参数
-	var param = req.query || req.params;
+	var param = req.body;
 	// 执行Query
 	db.query(sprintf($sqlCommands.event_status.searchOneUser,param.uuid),
 		function(err, result) {

@@ -22,10 +22,17 @@ const {width} = Dimensions.get('window');
 class HomePage extends Component<{}> {
 	constructor(props) {
 		super(props);
+		let date = new Date();
+		date.setHours(0, 0, 0, 0);
+		let selected = date.getFullYear().toString() + '-';
+		selected += (date.getMonth() + 1).toString() + '-';
+		selected += date.getDate().toString();
 		this.state = {
 			name: '',
 			birthday: 0,
 			age: 0,
+			selected: selected,
+			selectedTimeStamp: date.getTime(),
 		}
 		this._loadStorage();
 	}
@@ -43,6 +50,7 @@ class HomePage extends Component<{}> {
                 name: ret.username,
 				birthday: ret.birthday,
 				age: age,
+	            uuid: ret.uuid,
             });
         }).catch(err => {
             console.warn('Load userInfo fail ', err);
@@ -55,8 +63,11 @@ class HomePage extends Component<{}> {
 
     _onDayPress(day) {
         this.setState({
-            selected: day.dateString
+            selected: day.dateString,
+	        selectedTimeStamp: day.timestamp - 8 * 3600 * 1000,
         });
+        console.warn(day.dateString);
+        console.warn(day.timestamp - 8 * 3600 * 1000);
     }
 
 	_goToEventPage() {
@@ -66,7 +77,8 @@ class HomePage extends Component<{}> {
                 name:'EventPage',
                 component:EventPage,
                 params: {
-                    startTime: this.state.selected,
+                    startTime: this.state.selectedTimeStamp,
+	                uuid: this.state.uuid,
                 }
             })
         }

@@ -4,7 +4,8 @@
 
 import React, { Component } from 'react';
 
-const root_Url = "http://52.78.76.208:3000/";
+// const root_Url = "http://52.78.76.208:3000/";
+const root_Url = "http://10.10.20.204:3000/";
 class NetUtils extends Component{
     /*
      *  get请求

@@ -14,28 +14,31 @@ import {
 } from 'react-native';
 import ModalDropdown from 'react-native-modal-dropdown';
 const PropTypes = require('prop-types');
-import TextWithButton from './Component/TextWithButton'
+import TextWithButton from './Component/TextWithButton';
+import NetUtils from '../common/NetUtils';
+import Urls from '../common/urlCommands';
 
 var eventKeys = ['事件1', '事件2', '事件3'];
 class EditPage extends Component<{}> {
 	constructor(props) {
 		super(props);
-		let data = new Date();
-		data.setTime(props.startTime);
-		let shour = data.getHours();
-		let sminute = data.getMinutes();
-		let ssecond = data.getSeconds();
+		let date = new Date();
+		date.setTime(props.startTime);
+		let shour = date.getHours();
+		let sminute = date.getMinutes();
+		let ssecond = date.getSeconds();
 		
 		let ehour = 23;
 		let eminute = 59;
 		let esecond = 59;
 		if (props.endTime != -1)
 		{
-			data.setTime(props.endTime);
-			ehour = data.getHours();
-			eminute = data.getMinutes();
-			esecond = data.getSeconds();
+			date.setTime(props.endTime);
+			ehour = date.getHours();
+			eminute = date.getMinutes();
+			esecond = date.getSeconds();
 		}
+		date.setHours(0, 0, 0, 0);
 		this.state = {
 			startHour: shour,
 			startMinute: sminute,
@@ -47,7 +50,24 @@ class EditPage extends Component<{}> {
 			eventDesc: props.eventDesc,             //事件描述
 			id: props.id,                           //事件id  id==-1时为新建事件
 			title: props.id == -1 ? "新建" : "修改",
+			uuid: '',
+			zeroTimeStamp: date.getTime(),
 		};
+		this._loadStorage();
+	}
+	
+	_loadStorage() {
+		storage.load({
+			key: 'userInfo',
+			autoSync: false,
+			syncInBackground: false
+		}).then(ret => {
+			this.setState({
+				uuid: ret.uuid
+			});
+		}).catch(err => {
+			console.warn('Load userInfo fail ', err);
+		})
 	}
 	
 	static propTypes = {
@@ -157,7 +177,51 @@ class EditPage extends Component<{}> {
 	
 	//存库
 	_save() {
-	
+		if (this.state.uuid == '')
+		{
+			return;
+		}
+		
+		let startDate = new Date();
+		startDate.setTime(this.state.zeroTimeStamp);
+		startDate.setHours(this.state.startHour, this.state.startMinute, this.state.startSecond, 0);
+		let endDate = new Date();
+		endDate.setTime(this.state.zeroTimeStamp);
+		endDate.setHours(this.state.endHour, this.state.endMinute, this.state.endSecond, 0);
+		let url = this.state.id == -1 ? Urls.urls.addEvent : Urls.urls.editEvent;
+		let param = {
+			uuid: this.state.uuid,
+			eventType: this.state.eventType,
+			eventDesc: this.state.eventDesc,
+			startTime: startDate.getTime(),
+			endTime: endDate.getTime(),
+			id: this.state.id,
+		};
+
+		NetUtils.post(url, param,
+			(responseJSON)=>{
+				console.warn(responseJSON);
+				if (responseJSON == null)
+				{
+					Alert.alert('温馨提醒','失败！');
+					return;
+				}
+				
+				if (responseJSON.code != 200)
+				{
+					Alert.alert('温馨提醒','失败！');
+					return;
+				}
+				
+				storage.save({
+					key: 'userEvent',
+					id: this.state.id.toString(),
+					data: param,
+				})
+				
+				this._goBack();
+			}
+		);
 	}
 	
 	//界面回退

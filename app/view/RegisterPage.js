@@ -74,7 +74,7 @@ class RegisterPage extends Component<{}> {
 		NetUtils.post(Urls.urls.register,
 			{username:this.state.name,password:this.state.password,birthday:birthday},
 			(responseJSON)=>{
-				console.warn(responseJSON);
+				// console.warn(responseJSON);
 				if (responseJSON == null)
 				{
 					Alert.alert('温馨提醒','注册失败！');
