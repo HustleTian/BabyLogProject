@@ -200,7 +200,7 @@ class EditPage extends Component<{}> {
 
 		NetUtils.post(url, param,
 			(responseJSON)=>{
-				console.warn(responseJSON);
+				// console.warn(responseJSON);
 				if (responseJSON == null)
 				{
 					Alert.alert('温馨提醒','失败！');
@@ -226,7 +226,11 @@ class EditPage extends Component<{}> {
 	
 	//界面回退
 	_goBack() {
-		const { navigator} = this.props;
+		const { navigator, callBack} = this.props;
+		if (callBack)
+		{
+			callBack();
+		}
 		if (navigator) {
 			navigator.pop()
 		}

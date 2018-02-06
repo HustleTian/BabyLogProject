@@ -66,8 +66,8 @@ class HomePage extends Component<{}> {
             selected: day.dateString,
 	        selectedTimeStamp: day.timestamp - 8 * 3600 * 1000,
         });
-        console.warn(day.dateString);
-        console.warn(day.timestamp - 8 * 3600 * 1000);
+        // console.warn(day.dateString);
+        // console.warn(day.timestamp - 8 * 3600 * 1000);
     }
 
 	_goToEventPage() {

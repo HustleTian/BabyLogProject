@@ -15,22 +15,37 @@ import EventComponent from './Component/EventComponent'
 import TextWithButton from './Component/TextWithButton'
 import EditPage from './EditPage';
 const PropTypes = require('prop-types');
-var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
 class EventPage extends Component<{}> {
 	constructor(props) {
 		super(props);
 		let date = new Date();
 		date.setTime(props.startTime);
-		let day = date.getFullYear().toString() + "-" + date.getMonth().toString() + "-" + date.getDate().toString();
+		let day = date.getFullYear().toString() + "-" + (date.getMonth() + 1).toString() + "-" + date.getDate().toString();
+		
+		let ds = new ListView.DataSource({
+			rowHasChanged: (r1, r2)=> {
+				if (r1 !== r2) {
+					console.log("不相等=");
+					console.log(r1);
+				} else {
+					console.log("相等=");
+					console.log(r1);
+					console.log(r2);
+				}
+				return r1 !== r2;
+			}
+		});
+		
+		this.data = new Array();
 		this.state = {
-			data: new Array(),
+			dataSource: ds.cloneWithRows(this.data),
 			startTime: props.startTime,     //当天0点的时间戳
 			lastEndTime: props.startTime,   //最新一个事件的结束时间
 			today: "日期:" + day,           //当天日期
 			uuid: props.uuid,
 		};
-		console.warn(props.startTime);
+		// console.warn(props.startTime);
 		this._loadData();
 	}
 	
@@ -69,9 +84,10 @@ class EventPage extends Component<{}> {
 				}
 			}
 			
+			this.data = data;
 			this.setState({
 				lastEndTime: lastEndTime,
-				data: data,
+				dataSource: this.state.dataSource.cloneWithRows(this.data),
 			});
 		}).catch(err => {
 			console.warn('Load userInfo fail ', err);
@@ -79,6 +95,10 @@ class EventPage extends Component<{}> {
 	}
 
     _addEvent() {
+	    this.setState({
+		    dataSource: this.state.dataSource.cloneWithRows(new Array())
+	    });
+	    
 	    const { navigator} = this.props;
 	    if (navigator) {
 		    navigator.push({
@@ -86,6 +106,9 @@ class EventPage extends Component<{}> {
 			    component:EditPage,
 			    params: {
 	                startTime: this.state.lastEndTime,
+				    callBack: ()=>{
+	                	this._loadData();
+				    }
                 }
 		    })
 	    }
@@ -95,17 +118,20 @@ class EventPage extends Component<{}> {
 	    const { navigator} = this.props;
 	    if (navigator) {
 	    	let comData = null;
-	    	for (var i = 0; i < this.state.data.length; i++)
+	    	for (var i = 0; i < this.data.length; i++)
 		    {
-		        if (this.state.data[i].id == id)
+		        if (this.data[i].id == id)
 		        {
-		            comData = this.state.data[i];
+		            comData = this.data[i];
 		        }
 		    }
 		    if (comData == null)
 		    {
 		    	return;
 		    }
+		    this.setState({
+			   dataSource: this.state.dataSource.cloneWithRows(new Array())
+		    });
 		    navigator.push({
 			    name:'EditPage',
 			    component:EditPage,
@@ -115,6 +141,9 @@ class EventPage extends Component<{}> {
                     endTime: comData.endTime,
                     eventType: comData.eventType,
                     eventDesc: comData.eventDesc,
+				    callBack: ()=>{
+					    this._loadData();
+				    }
 			    }
 		    })
 	    }
@@ -142,21 +171,6 @@ class EventPage extends Component<{}> {
     }
     
     render() {
-		if (this.state.data.length == 0)
-		{
-			return (
-				<View style={styles.container}>
-					<TextWithButton
-						title={this.state.today}
-						onClick= {()=>this._goBack()}
-						bTitle="返回"/>
-					<TextWithButton
-						title=''
-						onClick= {()=>this._addEvent()}
-						bTitle="添加"/>
-				</View>
-			);
-		}
         return (
             <View style={styles.container}>
                 <TextWithButton
@@ -168,8 +182,9 @@ class EventPage extends Component<{}> {
 		            onClick= {()=>this._addEvent()}
 		            bTitle="添加"/>
 	            <ListView
-		            dataSource={ds.cloneWithRows(this.state.data)}
+		            dataSource={this.state.dataSource}
 		            renderRow={(rowData, sectionID, rowID, highlightRow)=>this._renderRow(rowData, sectionID, rowID, highlightRow)}
+		            enableEmptySections={true}
 	            />
             </View>
         );
