@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "create-react-class": "^15.6.2",
+    "echarts": "^4.0.2",
     "native-echarts": "^0.4.0",
     "prop-types": "^15.6.0",
     "react": "16.2.0",

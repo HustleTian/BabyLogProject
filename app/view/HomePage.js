@@ -11,14 +11,23 @@ import {
     TouchableOpacity,
 	ScrollView,
     Alert,
-	Dimensions
+	Dimensions,
+	DeviceEventEmitter
 } from 'react-native';
 import {Calendar} from 'react-native-calendars';
 import Echarts from 'native-echarts';
 import TextWithButton from './Component/TextWithButton'
 import EventPage from './EventPage'
+import ComparePage from './ComparePage';
 const {width} = Dimensions.get('window');
+import UserController from '../common/UserController';
+import EventController from '../common/EventController';
 
+var EventType = {
+	Type1: 0,
+	Type2: 1,
+	Type3: 2,
+};
 class HomePage extends Component<{}> {
 	constructor(props) {
 		super(props);
@@ -28,37 +37,53 @@ class HomePage extends Component<{}> {
 		selected += (date.getMonth() + 1).toString() + '-';
 		selected += date.getDate().toString();
 		this.state = {
-			name: '',
-			birthday: 0,
+			nickname: '',
 			age: 0,
 			selected: selected,
 			selectedTimeStamp: date.getTime(),
+			data: new Array(),
 		}
-		this._loadStorage();
 	}
-
-    async _loadStorage() {
-        await storage.load({
-            key: 'userInfo',
-            autoSync: false,
-            syncInBackground: false
-        }).then(ret => {
+	
+	componentWillMount() {
+		this.getUserSubscription = DeviceEventEmitter.addListener('HomePageGetUser',(events) =>{
+			// console.warn(events);
+			let birthday = events.user.birthday;
 			let date = new Date();
-			let age = date.getTime() - ret.birthday;
-			age = Math.floor(age / (24 * 3600 * 1000));
-            this.setState({
-                name: ret.username,
-				birthday: ret.birthday,
-				age: age,
-	            uuid: ret.uuid,
-            });
-        }).catch(err => {
-            console.warn('Load userInfo fail ', err);
-        })
-    }
+			let today = date.getTime();
+			let gap = today - birthday;
+			gap /= 1000;
+			gap /= 3600;
+			gap /= 24;
+			gap = Math.floor(gap);
+			this.setState({
+				nickname: events.user.nickname,
+				age: gap,
+			});
+		});
+		this.getEventSubscription = DeviceEventEmitter.addListener('getEvent',(events) =>{
+			// console.warn(events);
+			this.setState({
+				data: events.event,
+			});
+		});
+		EventController.getEvent();
+		UserController.getUser('HomePageGetUser');
+	}
+	
+	componentWillUnmount() {
+		this.getUserSubscription.remove();
+		this.getEventSubscription.remove();
+	}
 	
 	_onCompare() {
-        Alert.alert('温馨提醒','功能暂未开放，敬请期待!')
+		const { navigator} = this.props;
+		if (navigator) {
+			navigator.push({
+				name:'ComparePage',
+				component:ComparePage,
+			})
+		}
 	}
 
     _onDayPress(day) {
@@ -78,38 +103,228 @@ class HomePage extends Component<{}> {
                 component:EventPage,
                 params: {
                     startTime: this.state.selectedTimeStamp,
-	                uuid: this.state.uuid,
                 }
             })
         }
 	}
+	
+	_getTodayTimeData() {
+		let time1 = 0,time2 = 0,time3 = 0;
+		for (let i = 0; i < this.state.data.length; i++)
+		{
+			if (this.state.data[i].startTime >= this.state.selectedTimeStamp && this.state.data[i].endTime <= this.state.selectedTimeStamp + 86400000)
+			{
+				let gapTime = this.state.data[i].endTime - this.state.data[i].startTime;
+				switch (this.state.data[i].eventType) {
+					case EventType.Type1:
+						time1 += gapTime;
+						break;
+					case EventType.Type2:
+						time2 += gapTime;
+						break;
+					case EventType.Type3:
+						time3 += gapTime;
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		
+		time1 /= 3600000;
+		time2 /= 3600000;
+		time3 /= 3600000;
+		
+		time1 = Number(time1.toFixed(1));
+		time2 = Number(time2.toFixed(1));
+		time3 = Number(time3.toFixed(1));
+		
+		return {time1:time1,time2:time2,time3:time3};
+	}
 
-	_getChartOptions() {
+	_getBarOptions() {
+		let time1 = this._getTodayTimeData().time1;
+		let time2 = this._getTodayTimeData().time2;
+		let time3 = this._getTodayTimeData().time3;
+		
 		return {
-            title: {
-                text: ''
-            },
-            tooltip: {},
-            legend: {
-                data:['销量']
-            },
-            xAxis: {
-                data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
-            },
-            yAxis: {},
-            series: [{
-                name: '销量',
-                type: 'bar',
-                data: [5, 20, 36, 10, 10, 20]
-            }]
-        };
+			title: {
+				text: '事件时间分类',
+				x:'center'
+			},
+			tooltip : {
+				trigger: 'item',
+				axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+					type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+				},
+				formatter: '{a} <br/> {c}小时'
+			},
+			legend: {
+				y: 'bottom',
+				data:['事件1','事件2','事件3'],
+			},
+			toolbox: {
+				show : true,
+				feature : {
+					dataView : {show: true, readOnly: true},
+					magicType : {show: true, type: ['line', 'bar']},
+					restore : {show: true},
+				}
+			},
+			xAxis : [
+				{
+					type : 'category',
+					data : [''],
+					axisTick: {
+						alignWithLabel: true
+					}
+				}
+			],
+			yAxis : [
+				{
+					name : '小时',
+					type : 'value',
+					min : 0,
+					max : 24,
+					splitNumber : 6,
+				}
+			],
+			series : [
+				{
+					name:'事件1',
+					type:'bar',
+					data:[time1],
+				},
+				{
+					name:'事件2',
+					type:'bar',
+					data:[time2],
+				},
+				{
+					name:'事件3',
+					type:'bar',
+					data:[time3],
+				}
+			]
+		};
+	}
+	
+	_getPieOption() {
+		let time1 = this._getTodayTimeData().time1;
+		let time2 = this._getTodayTimeData().time2;
+		let time3 = this._getTodayTimeData().time3;
+		
+		return {
+			title : {
+				text: '事件时间百分比',
+				x:'center'
+			},
+			tooltip : {
+				trigger: 'item',
+				formatter: "{a} <br/>{b} : {c}小时 ({d}%)"
+			},
+			legend: {
+				orient : 'vertical',
+				x : 'left',
+				data:['事件1','事件2','事件3']
+			},
+			toolbox: {
+				show : true,
+				feature : {
+					dataView : {show: true, readOnly: true},
+					magicType : {
+						show: true,
+							type: ['pie', 'funnel'],
+							option: {
+							funnel: {
+								x: '25%',
+								width: '50%',
+								funnelAlign: 'left',
+								max: 24
+							}
+						}
+					},
+					restore : {show: true}
+				}
+			},
+			calculable : true,
+			series : [
+				{
+					name:'百分比',
+					type:'pie',
+					radius : '55%',
+					center: ['50%', '60%'],
+					data:[
+						{value:time1, name:'事件1'},
+						{value:time2, name:'事件2'},
+						{value:time3, name:'事件3'},
+					]
+				}
+			]
+		};
+	}
+	
+	_getPieOption2() {
+		let eventKeys = ['事件1', '事件2', '事件3'];
+		let data = new Array();
+		
+		for (let i = 0; i < this.state.data.length; i++)
+		{
+			if (this.state.data[i].startTime >= this.state.selectedTimeStamp && this.state.data[i].endTime <= this.state.selectedTimeStamp + 86400000)
+			{
+				let gapTime = this.state.data[i].endTime - this.state.data[i].startTime;
+				gapTime /= 3600000;
+				gapTime = Number(gapTime.toFixed(1));
+				data.push({value:gapTime, name:eventKeys[this.state.data[i].eventType]});
+			}
+		}
+		
+		return {
+			tooltip : {
+				trigger: 'item',
+				formatter: "{a} <br/>{b} : {c} ({d}%)"
+			},
+			legend: {
+				orient : 'vertical',
+				x : 'left',
+				data:['事件1','事件2','事件3'],
+			},
+			toolbox: {
+				show : true,
+				feature : {
+					dataView : {show: true, readOnly: true},
+					magicType : {
+						show: true,
+						type: ['pie', 'funnel'],
+						option: {
+							funnel: {
+								x: '25%',
+								width: '50%',
+								funnelAlign: 'center',
+								max: 1548
+							}
+						}
+					},
+					restore : {show: true},
+				}
+			},
+			calculable : true,
+			series : [
+				{
+					name:'时间段',
+					type:'pie',
+					radius : ['40%', '60%'],
+					data: data
+				}
+			]
+		};
 	}
 
     render() {
         return (
 	        <ScrollView style={styles.scrollContainer}>
 		        <TextWithButton
-			        title={this.state.name + '的成长日志'}
+			        title={this.state.nickname + '的成长日志'}
 			        onClick= {() => this._onCompare()}
 			        bTitle="对比"/>
                 <Calendar
@@ -121,19 +336,16 @@ class HomePage extends Component<{}> {
 				<Text style={styles.ageLabel}>
 					{'月龄:' + (this.state.age > 30 ? (Math.floor(this.state.age / 30)).toString() + '月' : this.state.age.toString() + '天')}
 				</Text>
-				<TextWithButton
-					title="今日动态"
-					onClick= {() => this._goToEventPage()}
-					bTitle="编辑"/>
+		        <TextWithButton
+			        title="今日动态"
+			        onClick= {() => this._goToEventPage()}
+			        bTitle="编辑"/>
+		        <Echarts option={this._getBarOptions()} width={width} />
+		        <Echarts option={this._getPieOption()} width={width} />
+		        <Echarts option={this._getPieOption2()} width={width} />
 	        </ScrollView>
         );
     }
-
-	// <Echarts option={this._getChartOptions()} height={300} width={width} />
-	// <TextWithButton
-	// 	title="test"
-	// 	onClick= {this._onButtonClick1}
-	// 	bTitle="test1"/>
 }
 
 const styles = StyleSheet.create({

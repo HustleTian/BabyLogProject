@@ -11,33 +11,56 @@ import {
 	Button,
     Alert,
     DatePickerAndroid,
+	DeviceEventEmitter,
 } from 'react-native';
 import HomePage from './HomePage';
-import NetUtils from '../common/NetUtils'
-import Urls from '../common/urlCommands'
+import UserController from '../common/UserController';
 
 class RegisterPage extends Component<{}> {
 	constructor(props) {
 		super(props);
 		let date = new Date();
 		this.state = {
-			name: "",
+			username: "",
 			password: "",
 			year: date.getFullYear(),
 			month: date.getMonth(),
 			day: date.getDate(),
+			nickname: "",
 		}
+	}
+	
+	componentWillMount() {
+		this.userLoginSubscription = DeviceEventEmitter.addListener('userRegister',(events) =>{
+			const { navigator} = this.props;
+			if (navigator) {
+				navigator.push({
+					name:'HomePage',
+					component:HomePage,
+				})
+			}
+		});
+	}
+	
+	componentWillUnmount() {
+		this.userLoginSubscription.remove();
 	}
 	
 	_handleNameChange(e) {
 		this.setState({
-			name: e.nativeEvent.text
+			username: e.nativeEvent.text
 		})
 	}
 	
 	_handlePasswordChange(e) {
 		this.setState({
 			password: e.nativeEvent.text
+		})
+	}
+	
+	_handleNicknameChange(e) {
+		this.setState({
+			nickname: e.nativeEvent.text
 		})
 	}
 	
@@ -71,47 +94,13 @@ class RegisterPage extends Component<{}> {
 	_sendAction() {
 		let date = new Date(this.state.year,this.state.month,this.state.day);
 		let birthday = date.getTime();
-		NetUtils.post(Urls.urls.register,
-			{username:this.state.name,password:this.state.password,birthday:birthday},
-			(responseJSON)=>{
-				// console.warn(responseJSON);
-				if (responseJSON == null)
-				{
-					Alert.alert('温馨提醒','注册失败！');
-					return;
-				}
-
-				if (responseJSON.code != 200)
-				{
-					Alert.alert('温馨提醒','注册失败！');
-					return;
-				}
-
-				if (responseJSON.uuid == null)
-				{
-					Alert.alert('温馨提醒','注册失败！');
-					return;
-				}
-
-				storage.save({
-					key: 'userInfo',
-					data: {
-						username: this.state.name,
-						password: this.state.password,
-						uuid: responseJSON.uuid,
-						birthday: this.state.birthday,
-					},
-				})
-
-				const { navigator} = this.props;
-				if (navigator) {
-					navigator.push({
-						name:'HomePage',
-						component:HomePage,
-					})
-				}
-			}
-		);
+		let param = {
+			username : this.state.username,
+			password: this.state.password,
+			nickname: this.state.nickname,
+			birthday: birthday,
+		};
+		UserController.userRegister(param);
 	}
 	
 	render() {
@@ -145,7 +134,22 @@ class RegisterPage extends Component<{}> {
 					value={this.state.password}
 					onChange={e => this._handlePasswordChange(e)}
 				/>
+				<Text style={styles.instructions}>
+					昵称
+				</Text>
+				<TextInput
+					style={styles.input}
+					numberOfLines={1}
+					autoFocus={false}
+					underlineColorAndroid={'transparent'}
+					textAlign='center'
+					value={this.state.nickname}
+					onChange={e => this._handleNicknameChange(e)}
+				/>
 				<View style={styles.line} />
+				<Text style={styles.instructions}>
+					生日
+				</Text>
 				<Button title={this._getDateString()}
 				        onPress={() => this._openDatePicker()}/>
 				<View style={styles.line} />

@@ -11,7 +11,7 @@ function addUserAction(req, res, next){
     // 执行Query
 	var uuid = guid();
     db.queryArgs($sqlCommands.user_status.insertOne,
-        [uuid,param.username,param.password,param.sex,param.birthday],
+        [uuid,param.username,param.password,param.sex,param.birthday,param.nickname],
         function(err, result) {
             if(!err){
                 result = {
@@ -28,7 +28,7 @@ function addUserAction(req, res, next){
 
 /**
  * 查询用户Action
- * @returns {uuid,username,password,sex,birthday}
+ * @returns {uuid,username,password,sex,birthday,nickname}
  */
 function loginUserAction(req, res, next) {
 	// 获取前台页面传过来的参数

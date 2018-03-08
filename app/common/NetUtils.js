@@ -5,6 +5,7 @@
 import React, { Component } from 'react';
 
 const root_Url = "http://52.78.76.208:3000/";
+// const root_Url = "http://10.10.21.9:3000/";
 // const root_Url = "http://192.168.3.19:3000/";
 class NetUtils extends Component{
     /*

@@ -8,12 +8,11 @@ import {
 	Text,
 	View,
 	TextInput,
-	Alert,
 	Button,
+	DeviceEventEmitter,
 } from 'react-native';
 import HomePage from './HomePage';
-import NetUtils from '../common/NetUtils';
-import Urls from '../common/urlCommands';
+import UserController from '../common/UserController';
 
 class LoginPage extends Component<{}> {
 	constructor(props) {
@@ -22,6 +21,22 @@ class LoginPage extends Component<{}> {
 			name: "",
 			password: "",
 		}
+	}
+	
+	componentWillMount() {
+		this.userLoginSubscription = DeviceEventEmitter.addListener('userLogin',(events) =>{
+			const { navigator} = this.props;
+			if (navigator) {
+				navigator.push({
+					name:'HomePage',
+					component:HomePage,
+				})
+			}
+		});
+	}
+	
+	componentWillUnmount() {
+		this.userLoginSubscription.remove();
 	}
 	
 	_handleNameChange(e) {
@@ -37,41 +52,7 @@ class LoginPage extends Component<{}> {
 	}
 	
 	_sendAction() {
-		NetUtils.post(Urls.urls.login,
-			{username:this.state.name,password:this.state.password},
-			(responseJSON)=>{
-				if (responseJSON == null)
-				{
-					Alert.alert('温馨提醒','用户名或密码错误！');
-					return;
-				}
-				
-				if (responseJSON.code != 200)
-				{
-					Alert.alert('温馨提醒','用户名或密码错误！');
-					return;
-				}
-				
-				if (responseJSON.rows == null || responseJSON.rows.length <= 0)
-				{
-					Alert.alert('温馨提醒','用户名或密码错误！');
-					return;
-				}
-				
-				storage.save({
-					key: 'userInfo',
-					data: responseJSON.rows[0],
-				})
-				
-				const { navigator} = this.props;
-				if (navigator) {
-					navigator.push({
-						name:'HomePage',
-						component:HomePage,
-					})
-				}
-			}
-		);
+		UserController.userLogin(this.state.name,this.state.password);
 	}
 	
 	render() {

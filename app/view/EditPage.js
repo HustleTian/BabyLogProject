@@ -11,12 +11,12 @@ import {
 	Alert,
 	TextInput,
 	TimePickerAndroid,
+	DeviceEventEmitter,
 } from 'react-native';
 import ModalDropdown from 'react-native-modal-dropdown';
 const PropTypes = require('prop-types');
 import TextWithButton from './Component/TextWithButton';
-import NetUtils from '../common/NetUtils';
-import Urls from '../common/urlCommands';
+import EventController from '../common/EventController';
 
 var eventKeys = ['事件1', '事件2', '事件3'];
 class EditPage extends Component<{}> {
@@ -47,27 +47,13 @@ class EditPage extends Component<{}> {
 			endMinute: eminute,
 			endSecond: esecond,
 			eventType: props.eventType,             //事件类型
+			eventType: Number(props.eventType),      //事件类型
 			eventDesc: props.eventDesc,             //事件描述
 			id: props.id,                           //事件id  id==-1时为新建事件
 			title: props.id == -1 ? "新建" : "修改",
 			uuid: '',
 			zeroTimeStamp: date.getTime(),
 		};
-		this._loadStorage();
-	}
-	
-	_loadStorage() {
-		storage.load({
-			key: 'userInfo',
-			autoSync: false,
-			syncInBackground: false
-		}).then(ret => {
-			this.setState({
-				uuid: ret.uuid
-			});
-		}).catch(err => {
-			console.warn('Load userInfo fail ', err);
-		})
 	}
 	
 	static propTypes = {
@@ -84,6 +70,20 @@ class EditPage extends Component<{}> {
 		endTime: -1,
 		eventType : 0,
 		eventDesc : "",
+	}
+	
+	componentWillMount() {
+		this.addEventSubscription = DeviceEventEmitter.addListener('addEvent',(events) =>{
+			this._goBack();
+		});
+		this.editEventSubscription = DeviceEventEmitter.addListener('editEvent',(events) =>{
+			this._goBack();
+		});
+	}
+	
+	componentWillUnmount() {
+		this.addEventSubscription.remove();
+		this.editEventSubscription.remove();
 	}
 	
 	//进行创建时间时间选择器
@@ -147,7 +147,7 @@ class EditPage extends Component<{}> {
 	
 	//选择事件
 	_onEventSelect(index,value) {
-		this.setState({eventType:index});
+		this.setState({eventType:Number(index)});
 		console.log("DropDown select index is " + index.toString() + " value is " + value);
 	}
 	
@@ -177,20 +177,13 @@ class EditPage extends Component<{}> {
 	
 	//存库
 	_save() {
-		if (this.state.uuid == '')
-		{
-			return;
-		}
-		
 		let startDate = new Date();
 		startDate.setTime(this.state.zeroTimeStamp);
 		startDate.setHours(this.state.startHour, this.state.startMinute, this.state.startSecond, 0);
 		let endDate = new Date();
 		endDate.setTime(this.state.zeroTimeStamp);
 		endDate.setHours(this.state.endHour, this.state.endMinute, this.state.endSecond, 0);
-		let url = this.state.id == -1 ? Urls.urls.addEvent : Urls.urls.editEvent;
 		let param = {
-			uuid: this.state.uuid,
 			eventType: this.state.eventType,
 			eventDesc: this.state.eventDesc,
 			startTime: startDate.getTime(),
@@ -198,30 +191,11 @@ class EditPage extends Component<{}> {
 			id: this.state.id,
 		};
 
-		NetUtils.post(url, param,
-			(responseJSON)=>{
-				// console.warn(responseJSON);
-				if (responseJSON == null)
-				{
-					Alert.alert('温馨提醒','失败！');
-					return;
-				}
-				
-				if (responseJSON.code != 200)
-				{
-					Alert.alert('温馨提醒','失败！');
-					return;
-				}
-				
-				storage.save({
-					key: 'userEvent',
-					id: this.state.id.toString(),
-					data: param,
-				})
-				
-				this._goBack();
-			}
-		);
+		if (param.id == -1) {
+			EventController.addEvent(param);
+		}else {
+			EventController.editEvent(param);
+		}
 	}
 	
 	//界面回退

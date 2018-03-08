@@ -9,11 +9,14 @@ import {
     View,
     TextInput,
     TouchableOpacity,
-	ListView
+	ListView,
+	DeviceEventEmitter
 } from 'react-native';
 import EventComponent from './Component/EventComponent'
 import TextWithButton from './Component/TextWithButton'
 import EditPage from './EditPage';
+import UserController from '../common/UserController';
+import EventController from '../common/EventController';
 const PropTypes = require('prop-types');
 
 class EventPage extends Component<{}> {
@@ -43,10 +46,9 @@ class EventPage extends Component<{}> {
 			startTime: props.startTime,     //当天0点的时间戳
 			lastEndTime: props.startTime,   //最新一个事件的结束时间
 			today: "日期:" + day,           //当天日期
-			uuid: props.uuid,
+			uuid: UserController.getUserUUid(),
 		};
 		// console.warn(props.startTime);
-		this._loadData();
 	}
 	
 	static propTypes = {
@@ -59,39 +61,38 @@ class EventPage extends Component<{}> {
 		uuid : '',
 	}
 	
-	_loadData() {
-		storage.load({
-			key: 'userEvent',
-			autoSync: true,
-			syncInBackground: true,
-			syncParams: {
-				extraFetchOptions: {
-					uuid: this.state.uuid,
-				},
-			},
-		}).then(ret => {
+	componentWillMount() {
+		this.getEventSubscription = DeviceEventEmitter.addListener('getEvent',(events) =>{
+			// console.warn(events);
 			let data = new Array();
 			let lastEndTime = 0;
-			for (let i = 0; i < ret.length; i++)
+			for (let i = 0; i < events.event.length; i++)
 			{
-				if (ret[i].startTime >= this.state.startTime && ret[i].endTime <= this.state.startTime + 86400000)
+				if (events.event[i].startTime >= this.state.startTime && events.event[i].endTime <= this.state.startTime + 86400000)
 				{
-					data.push(ret[i]);
-					if (ret[i].endTime > lastEndTime)
+					data.push(events.event[i]);
+					if (events.event[i].endTime > lastEndTime)
 					{
-						lastEndTime = ret[i].endTime;
+						lastEndTime = events.event[i].endTime;
 					}
 				}
 			}
 			
 			this.data = data;
 			this.setState({
-				lastEndTime: lastEndTime,
+				lastEndTime: lastEndTime == 0 ? this.state.lastEndTime : lastEndTime,
 				dataSource: this.state.dataSource.cloneWithRows(this.data),
 			});
-		}).catch(err => {
-			console.warn('Load userInfo fail ', err);
 		});
+		this._loadData();
+	}
+	
+	componentWillUnmount() {
+		this.getEventSubscription.remove();
+	}
+	
+	_loadData() {
+		EventController.getEvent();
 	}
 
     _addEvent() {
@@ -115,6 +116,7 @@ class EventPage extends Component<{}> {
     }
     
     _editEvent(id) {
+		// console.warn(id);
 	    const { navigator} = this.props;
 	    if (navigator) {
 	    	let comData = null;
