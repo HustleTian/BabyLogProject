@@ -161,7 +161,7 @@ class HomePage extends Component<{}> {
 			},
 			legend: {
 				y: 'bottom',
-				data:['事件1','事件2','事件3'],
+				data:['吃奶', '睡觉', '活动'],
 			},
 			toolbox: {
 				show : true,
@@ -191,17 +191,17 @@ class HomePage extends Component<{}> {
 			],
 			series : [
 				{
-					name:'事件1',
+					name:'吃奶',
 					type:'bar',
 					data:[time1],
 				},
 				{
-					name:'事件2',
+					name:'睡觉',
 					type:'bar',
 					data:[time2],
 				},
 				{
-					name:'事件3',
+					name:'活动',
 					type:'bar',
 					data:[time3],
 				}
@@ -226,7 +226,7 @@ class HomePage extends Component<{}> {
 			legend: {
 				orient : 'vertical',
 				x : 'left',
-				data:['事件1','事件2','事件3']
+				data:['吃奶', '睡觉', '活动']
 			},
 			toolbox: {
 				show : true,
@@ -255,9 +255,9 @@ class HomePage extends Component<{}> {
 					radius : '55%',
 					center: ['50%', '60%'],
 					data:[
-						{value:time1, name:'事件1'},
-						{value:time2, name:'事件2'},
-						{value:time3, name:'事件3'},
+						{value:time1, name:'吃奶'},
+						{value:time2, name:'睡觉'},
+						{value:time3, name:'活动'},
 					]
 				}
 			]
@@ -265,7 +265,7 @@ class HomePage extends Component<{}> {
 	}
 	
 	_getPieOption2() {
-		let eventKeys = ['事件1', '事件2', '事件3'];
+		let eventKeys = ['吃奶', '睡觉', '活动'];
 		let data = new Array();
 		
 		for (let i = 0; i < this.state.data.length; i++)
@@ -287,7 +287,7 @@ class HomePage extends Component<{}> {
 			legend: {
 				orient : 'vertical',
 				x : 'left',
-				data:['事件1','事件2','事件3'],
+				data:['吃奶', '睡觉', '活动'],
 			},
 			toolbox: {
 				show : true,
@@ -319,6 +319,16 @@ class HomePage extends Component<{}> {
 			]
 		};
 	}
+	
+	_onSelectName() {
+		const { navigator} = this.props;
+		if (navigator) {
+			navigator.push({
+				name:'NamePage',
+				component:NamePage,
+			})
+		}
+	}
 
     render() {
         return (
@@ -327,6 +337,10 @@ class HomePage extends Component<{}> {
 			        title={this.state.nickname + '的成长日志'}
 			        onClick= {() => this._onCompare()}
 			        bTitle="对比"/>
+		        {/*<TextWithButton*/}
+			        {/*title={'选名'}*/}
+			        {/*onClick= {() => this._onSelectName()}*/}
+			        {/*bTitle="进入"/>*/}
                 <Calendar
                     onDayPress={(day) => this._onDayPress(day)}
                     style={styles.calendar}

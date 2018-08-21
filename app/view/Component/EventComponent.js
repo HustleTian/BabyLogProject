@@ -11,7 +11,7 @@ import {
 import TextWithButton from './TextWithButton'
 const PropTypes = require('prop-types');
 
-var eventKeys = ['事件1', '事件2', '事件3'];
+var eventKeys = ['吃奶', '睡觉', '活动'];
 class EventComponent extends Component<{}> {
 	constructor(props) {
 		super(props);

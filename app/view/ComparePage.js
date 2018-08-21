@@ -23,7 +23,7 @@ var EventType = {
 	Type2: 1,
 	Type3: 2,
 };
-var eventKeys = ['事件1', '事件2', '事件3'];
+var eventKeys = ['吃奶', '睡觉', '活动'];
 class ComparePage extends Component<{}> {
 	constructor(props) {
 		super(props);
@@ -138,7 +138,7 @@ class ComparePage extends Component<{}> {
 				}
 			},
 			legend: {
-				data:['事件1', '事件2','事件3'],
+				data:['吃奶', '睡觉', '活动'],
 				y: 'bottom'
 			},
 			toolbox: {

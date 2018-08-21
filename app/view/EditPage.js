@@ -18,7 +18,7 @@ const PropTypes = require('prop-types');
 import TextWithButton from './Component/TextWithButton';
 import EventController from '../common/EventController';
 
-var eventKeys = ['事件1', '事件2', '事件3'];
+var eventKeys = ['吃奶', '睡觉', '活动'];
 class EditPage extends Component<{}> {
 	constructor(props) {
 		super(props);
